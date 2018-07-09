@@ -16,9 +16,10 @@ class hectareCrop(object):
         ''' 
         
         
+        
         annualrain = random.gauss(50,20)
         if annualrain < 0:
-            annualrain == 0
+            annualrain = 0
         
         self.rainAmt = annualrain
         
@@ -35,8 +36,13 @@ class hectareCrop(object):
         self.NAmt
         '''
         
-        #self.NAmt = self.NFert - ((1+(.03))**self.rainfall())
-        self.NAmt = self.NFert - 0.03 * self.rainfall()
+        #self.NAmt = self.NFert - (((self.NFert*.03))**self.rainfall())
+        Namount = self.NFert - self.NFert * 0.03 *self.rainfall()
+        
+        if Namount < 0:
+            Namount = 0
+        
+        self.NAmt = Namount
         
         return self.NAmt
         
@@ -64,7 +70,7 @@ class hectareCrop(object):
         RETURN grossProfit, not an object attribute
         '''
         
-        if self.rainfall() > 50 or self.irrigation == True:
+        if self.rainfall() >= 50:
             self.grossProfit = self.cropYield()*7
         else:
             self.grossProfit = self.cropYield()*7 - 10*(50-self.rainfall())
@@ -87,10 +93,10 @@ def modelYield(NFert):
                 
         yearsyld.append(crop.cropYield())
 
-    
-        
+    pylab.figure(1)
+    pylab.title('Yield Data')
     pylab.hist(yearsyld)
-    pylab.show()
+
 
     
 modelYield(200)
@@ -107,9 +113,12 @@ def modelProfit(NFert):
         crop = hectareCrop(NFert, False)        
                 
         yearsprofit.append(crop.profit())
-
+    
+    
+    pylab.figure(2)
+    
     pylab.subplot(2,2,1)
-    pylab.title('Non-irr')    
+    pylab.title('Non-irr Profit')    
     pylab.hist(yearsprofit)
     
     pylab.subplot(2,2,3)
@@ -125,7 +134,7 @@ def modelProfit(NFert):
         
 
     pylab.subplot(2,2,2)
-    pylab.title('\nIrr')    
+    pylab.title('\nIrr Profit')    
     pylab.hist(yearsprofitirr)
     
     pylab.subplot(2,2,4)
