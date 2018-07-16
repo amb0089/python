@@ -26,11 +26,17 @@ class TEModel(object):
         return self.GDDlist
         
     def forecastCal (self):
-        self.day1 = self.GDDacc.append(int(self.GDDlist[0]))
-        self.day2 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1]))
-        self.day3 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2]))
-        self.day4 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3]))
-        self.day5 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3])+int(self.GDDlist[4]))
+        self.day1 = self.GDDacc.append(sum(self.GDDlist[0:(1+self.GDDlist.index(0))]))
+        
+
+
+
+
+        # self.day2 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1]))
+        # self.day3 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2]))
+        # self.day4 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3]))
+        # self.day5 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3])+int(self.GDDlist[4]))
+        
        
         
     
@@ -45,19 +51,15 @@ class TEModel(object):
         
     def officialList(self):
         
-        x=1
         
-        if x < len(self.pastlist):        
-                      
-            total = sum(self.pastlist[0:x])
+        
+        for i in range(len(self.pastlist)):        
+                   
+                        
+            self.pastacc.append(sum(self.pastlist[0:(i+1)]))
+       
             
-            self.pastacc.append(total)
-            x+=1
-            # self.day2 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1]))
-            # self.day3 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2]))
-            # self.day4 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3]))
-            # self.day5 = self.GDDacc.append(int(self.GDDlist[0])+int(self.GDDlist[1])+int(self.GDDlist[2])+int(self.GDDlist[3])+int(self.GDDlist[4]))
-
+            
         return self.pastacc 
 
     def officialCal (self):
@@ -66,35 +68,32 @@ class TEModel(object):
        
         return self.totalacc              
     
-    def clipyield(self):
+
+
+    def pastclipyield(self):
         '''Predicts the clipping yield based on GDD
         '''
-        
-        if self.apps==1:
-            yld = 2.42 * (2.71828 **(-self.totalacc/264.1)) * math.sin((3.14159*(self.totalacc+808.6))/871.7)
-        elif self.apps>1 and self.totalacc <= 300:
-            yld = -0.60
-        elif self.apps>1 and self.totalacc > 300 and self.totalacc <=400:
-            yld = -0.25
-        elif self.apps>1 and self.totalacc > 400 and self.totalacc <=600:
-            yld = -0.10 
-        elif self.apps>1 and self.totalacc > 600:
-            yld = 0 
-
-
-            
-        if yld > 0:
-            self.yld = 0
-        else:
-            self.yld = yld   
+        for i in range(len(self.pastacc)):
+            if self.apps==1:
+                yld = 2.42 * (2.71828 **(-self.pastacc[i]/264.1)) * math.sin((3.14159*(self.pastacc[i]+808.6))/871.7)            
+            elif self.apps>1 and self.pastacc[i] <= 300:
+                yld = -0.60
+            elif self.apps>1 and self.pastacc[i] > 300 and self.pastacc[i] <=400:
+                yld = -0.25
+            elif self.apps>1 and self.pastacc[i] > 400 and self.pastacc[i] <=600:
+                yld = -0.10 
+            elif self.apps>1 and self.pastacc[i] > 600:
+                yld = 0 
+ 
+            if yld > 0:
+                yld == 0
+                self.clipyld.append(yld)
+            else:
+                self.clipyld.append(yld)    
     
-        return self.yld
-
-    def updateyld (self):
-        
-        self.clipyld.append(self.yld)
-
         return self.clipyld
+
+
        
     def model(self):
         
@@ -107,105 +106,32 @@ class TEModel(object):
 
 green = TEModel()
 x=0
-while x < 5:
+while x < 1:
 
     #green.forecast()
     #green.forecastCal()
     #green.updateGDD()
     green.official()
-    green.officialList()
-    green.officialCal()
-    green.clipyield()
-    green.updateyld()
     x +=1
 
-print(green.pastlist)
-print(green.pastacc)
+
+green.officialList()
+green.officialCal()
+green.pastclipyield()
+green.model()
 
 
 
-#green.model()
 
 #print(green.GDDlist)
 #print(green.GDDacc)
+print(green.pastlist)
+print(green.pastacc)
 print(green.totalacc)
-
 print(green.clipyld)
 
 
 
-
-'''
-green.forecast(50)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-green.forecast(100)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-green.forecast(200)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-
-green.forecast(300)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-green.forecast(400)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-green.forecast(500)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-
-green.forecast(600)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-green.forecast(700)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-green.forecast(800)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-
-
-
-green.forecast(900)
-green.updateGDD()
-green.clipyield()
-green.updateyld()
-green.model()
-'''
 
 
 
