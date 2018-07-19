@@ -1,8 +1,22 @@
 import random, pylab, math
-import forecastio
+import forecastio, time
 from datetime import datetime, timedelta
 import pylab
 import argparse
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-d', '--day', help="Enter the app date with no spaces", type = int)
+
+parser.add_argument('-m', '--month', help="Enter the app month (number) with no spaces", type = int)
+
+parser.add_argument('-y', '--year', help="Enter the app year with no spaces", type = int)
+
+parser.add_argument('-f', '--frequency', help="Enter the app frequency with no spaces", type = int)
+
+args = parser.parse_args()
+
 
 
 class TEModel(object):
@@ -10,11 +24,12 @@ class TEModel(object):
     '''
     def __init__(self):
         
-        self.month = 7
-        self.day = 16
-
+        self.year = args.year        
+        self.month = args.month
+        self.day = args.day
+        
         self.apps = 1
-        self.freq = 300
+        self.freq = args.frequency
 
         self.forecastdate = []
         self.forecastlist = []
@@ -23,18 +38,20 @@ class TEModel(object):
         self.pastdate = []        
         self.pastlist = []
         self.pastacc = []
+
+        self.totallistacc = []
         
         self.clipyld = []
 
         
 
 
-    def official (self):
+    def weatherGDD (self):
         
         api_key = "0e7bfbdbefec8029968ab7246e77150f"
         
         
-        start = datetime(2018, self.month, self.day)
+        start = datetime(self.year, self.month, self.day)
         end = datetime.now()
         
         times = [start]
@@ -68,98 +85,125 @@ class TEModel(object):
                 
         both = [temphigh] + [templow]
     
-        self.list = [(x+y)/2 for x,y in zip(*both)]
+        self.totalgddlist = [(x+y)/2 for x,y in zip(*both)]
         self.date = date
 
-        self.pastlist = self.list[0:-15]
-        self.forecastlist = self.list[-15:]
+        self.pastlist = self.totalgddlist[0:-15]
+        self.forecastlist = self.totalgddlist[-15:]
         self.forecastdate = self.date[-15:]
             
         return self.pastlist, self.forecastlist
 
         
-    def officialList(self):
-        
-        
+    def pastCal(self):
         
         for i in range(len(self.pastlist)):        
-                   
-                        
+                         
             self.pastacc.append(sum(self.pastlist[0:(i+1)]))
-       
-            
-            
+     
         return self.pastacc 
 
 
 
     def forecastCal (self):
+                
+        for i in range(len(self.totalgddlist)):        
+                             
+            self.totallistacc.append(sum(self.totalgddlist[0:(i+1)]))
         
-        listacc = []
-        
-        for i in range(len(self.list)):        
-                    
-                        
-            listacc.append(sum(self.list[0:(i+1)]))
-        
-        self.forecastacc = listacc[-15:]
-        
+        self.forecastacc = self.totallistacc[-15:]
             
-        return self.forecastacc     
+        return self.forecastacc, self.totallistacc     
         
     
+    def todayGDD (self):
 
-    def officialCal (self):
-
-        self.totalacc = max(self.pastacc)
+        self.totalgdd = max(self.pastacc)
        
-        return self.totalacc
-
-    
-                      
-                                    
+        return self.totalgdd
+                        
                                                   
-    def offreap(self):
+    def reapply(self):
                      
-         
-        if self.totalacc > self.freq:
-            print("reapply now")
+        if self.totalgdd > self.freq:
+            print("REAPPLY NOW!!!")
 
         else:
             for i in self.forecastacc:
                 if i > self.freq:
                     index = self.forecastacc.index(i)
-                    print("reapply on: " + str(self.forecastdate[index]))
-                    print("Total GDD accumulation is: " + str(self.totalacc))
+                    print("Reapply PGR on: " + str(self.forecastdate[index].date()))
+                    print("Total GDD accumulation is: " + str(self.totalgdd))
                     break
 
 
 
-green = TEModel()
-green.official()
-green.officialList()
-green.forecastCal()
-green.officialCal()
-green.offreap()
+
+    def clipyield(self):
+        '''Predicts the clipping yield based on GDD
+        '''
+        for i in range(len(self.totallistacc)):
+            
+            if self.apps==1:
+                yld = 2.42 * (2.71828 **(-self.totallistacc[i]/264.1)) * math.sin((3.14159*(self.totallistacc[i]+808.6))/871.7) 
+            
+            elif self.apps>1 and self.totallistacc[i] <= 300:
+                yld = -0.60
+            elif self.apps>1 and self.totallistacc[i] > 300 and self.totallistacc[i] <=400:
+                yld = -0.25
+            elif self.apps>1 and self.totallistacc[i] > 400 and self.totallistacc[i] <=600:
+                yld = -0.10 
+            elif self.apps>1 and self.totallistacc[i] > 600:
+                yld = 0 
+            
+
+            if yld > 0:
+                yld = 0
+                self.clipyld.append(yld)
+                            
+            else:
+                self.clipyld.append(yld)
+                    
+        return self.clipyld
 
 
-#green.pastclipyield()
-#green.model()
+        
+    def model(self):
+        
+    
+        pylab.title('Yield Data')
+        pylab.xlabel('Date')
+        pylab.ylabel('Clipping Yield Relative Difference')
+        pylab.plot(self.date, self.clipyld)
+        pylab.show()
 
 
 
 
 
-print(green.pastlist)
-print(green.pastacc)
-print(green.forecastlist)
-print(green.forecastacc)
+if __name__ == "__main__":
+          
+    green = TEModel()
+    green.weatherGDD()
+    
+    green.pastCal()
+    green.forecastCal()
+    
+    green.todayGDD()
+    green.reapply()
+    
+    
+    green.clipyield()
+    green.model()
 
 
 
 
 
-
-#print(green.clipyld)
+# print(green.pastlist)
+# print(green.pastacc)
+# print(green.forecastlist)
+# print(green.forecastacc)
+# print(green.clipyld)
 
 
