@@ -26,8 +26,6 @@ class TEModel(object):
         self.year = args.year        
         self.month = args.month
         self.day = args.day
-        
-        self.apps = 1
         self.freq = args.frequency
 
         self.forecastdate = []
@@ -130,38 +128,29 @@ class TEModel(object):
         if self.totalgdd > self.freq:
             print("REAPPLY NOW!!!")
 
+        elif self.forecastacc[-1] < self.freq:
+                    print("Reapplication date is past forecast range (14 days). \n GDD accumulation on " + str(self.forecastdate[-1].date()) 
+                            + " is expected to be " + str(int(self.forecastacc[-1])))
         else:
-            for i in self.forecastacc:
+            for i in self.forecastacc:          
                 if i > self.freq:
                     index = self.forecastacc.index(i)
                     print("Reapply PGR on: " + str(self.forecastdate[index].date()))
                     if len(self.pastacc)> 0: 
-                        print("Current total GDD accumulation is: " + str(self.totalgdd))
+                        print("Current total GDD accumulation is: " + str(int(self.totalgdd)))
                         break
                     else:
                         break
-
-
-
+                    
 
     def clipyield(self):
         '''Predicts the clipping yield based on GDD
         '''
         for i in range(len(self.totallistacc)):
             
-            if self.apps==1:
-                yld = 2.42 * (2.71828 **(-self.totallistacc[i]/264.1)) * math.sin((3.14159*(self.totallistacc[i]+808.6))/871.7) 
+            yld = 2.42 * (2.71828 **(-self.totallistacc[i]/264.1)) * math.sin((3.14159*(self.totallistacc[i]+808.6))/871.7) 
             
-            elif self.apps>1 and self.totallistacc[i] <= 300:
-                yld = -0.60
-            elif self.apps>1 and self.totallistacc[i] > 300 and self.totallistacc[i] <=400:
-                yld = -0.25
-            elif self.apps>1 and self.totallistacc[i] > 400 and self.totallistacc[i] <=600:
-                yld = -0.10 
-            elif self.apps>1 and self.totallistacc[i] > 600:
-                yld = 0 
             
-
             if yld > 0:
                 yld = 0
                 self.clipyld.append(yld)
