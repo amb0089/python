@@ -1,7 +1,6 @@
-import random, pylab, math
-import forecastio, time
+import pylab, math
+import forecastio
 from datetime import datetime, timedelta
-import pylab
 import argparse
 
 
@@ -118,7 +117,10 @@ class TEModel(object):
     
     def todayGDD (self):
 
-        self.totalgdd = max(self.pastacc)
+        if len(self.pastacc) > 0:
+            self.totalgdd = max(self.pastacc)
+        else:
+            self.totalgdd = 0
        
         return self.totalgdd
                         
@@ -133,8 +135,11 @@ class TEModel(object):
                 if i > self.freq:
                     index = self.forecastacc.index(i)
                     print("Reapply PGR on: " + str(self.forecastdate[index].date()))
-                    print("Total GDD accumulation is: " + str(self.totalgdd))
-                    break
+                    if len(self.pastacc)> 0: 
+                        print("Current total GDD accumulation is: " + str(self.totalgdd))
+                        break
+                    else:
+                        break
 
 
 
@@ -200,9 +205,9 @@ if __name__ == "__main__":
 
 
 
-# print(green.pastlist)
+#print(green.pastlist)
 # print(green.pastacc)
-# print(green.forecastlist)
+#print(green.forecastlist)
 # print(green.forecastacc)
 # print(green.clipyld)
 
