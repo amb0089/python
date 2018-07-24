@@ -136,18 +136,22 @@ class TEModel(object):
                     print("Reapplication date is past forecast range (15 days). \n GDD accumulation on " + str(self.forecastdate[-1].date()) 
                             + " is expected to be " + str(int(self.forecastacc[-1])))
        
-        else:                                           
+        elif len(self.pastlist) == 0:                                           
                                                         #predict date to reapply PGR, the date the GDD reapplication frequency will be obtained
             for i in self.forecastacc:          
                 if i > self.freq:
                     index = self.forecastacc.index(i)
                     print("Reapply PGR on: " + str(self.forecastdate[index].date()))
-                    if len(self.pastacc)> 0: 
-                        print("Current total GDD accumulation is: " + str(int(self.totalgdd)))
-                        break
-                    else:
-                        break
-                    
+                    break
+        else:
+            
+            for i in self.forecastacc:          
+                if i > self.freq:
+                    index = self.forecastacc.index(i)
+                    print("Reapply PGR in " + str(len(self.forecastdate[0:index])+1) + " days on: " + str(self.forecastdate[index].date()))
+                    print("Current total GDD accumulation is: " + str(int(self.totalgdd)))
+                    break
+
 
     def clipyield(self):
         '''Predicts the clipping yield based on GDD accumulation, cannot predict multiple applications yet
